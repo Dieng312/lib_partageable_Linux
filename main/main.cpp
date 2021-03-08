@@ -1,20 +1,39 @@
 
 #include <iostream>
-#include "Composant1.h"
-#include "Composant2.h"
+#include <dlfcn.h>
+#include <string>
+#include <cstring>
+using namespace std;
 
 int main(int argc, char ** argv)
 {
-	int data1=3;
-	int data2=5;
 
-	int valeur1;
-	int valeur2;
+    void *lib;
+    int (*f)(int, int);
+    char *error;
+    std::string componant;
+    std::cin >> componant;
+    std::string s = "/home/ahmed/" + componant;
+    char *path;
+    strcpy(path, s.c_str());
 
-	valeur1=composant1(data1,data2);
+   lib = dlopen(path, RTLD_LAZY);
+    if (lib) {
+        fprintf(stderr, "%s\n", dlerror());
+        exit(EXIT_FAILURE);
+    }
 
-	valeur2=composant2(data1,data2);
+   dlerror();
 
-	std::cout << getComposant1Version() << std::endl;
-	std::cout << "valeur 1 :" << valeur1 << " valeur 2 :" << valeur2 << std::endl;
+    *(void**) (&f) = dlsym(lib, "Composant1");
+
+   if ((error = dlerror()) != NULL)  {
+        fprintf(stderr, "%s\n", error);
+        exit(EXIT_FAILURE);
+    }
+
+   printf("%d\n", (f)(3, 5));
+    dlclose(lib);
+    exit(EXIT_SUCCESS);
+
 }
